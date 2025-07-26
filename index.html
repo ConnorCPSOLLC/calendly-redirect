@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    const name = params.get("name");
-    if (email && name) {
-      const redirectUrl = `https://calendly.com/connor-cpsollc/30min?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
-      window.location.href = redirectUrl;
-    }
-  </script>
-  <title>Redirecting...</title>
-</head>
-<body>
-  Redirecting to your Calendly booking page...
-</body>
+  <head>
+    <title>Booking Redirect</title>
+    <style>
+      body { margin: 0; font-family: sans-serif; }
+      #loader { text-align: center; margin-top: 100px; font-size: 20px; }
+    </style>
+  </head>
+  <body>
+    <div id="loader">Loading your booking link...</div>
+    <iframe id="calendly" style="width: 100%; height: 100vh; border: none; display: none;"></iframe>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get("email");
+
+      async function fetchCalendlyLink() {
+        const res = await fetch(`https://hooks.zapier.com/hooks/catch/23671027/uuwrxhr/?email=${email}`);
+        const data = await res.json(); // Make sure this returns { calendlyUrl: "..." }
+
+        if (data?.calendlyUrl) {
+          const iframe = document.getElementById("calendly");
+          iframe.src = data.calendlyUrl;
+          iframe.style.display = "block";
+          document.getElementById("loader").style.display = "none";
+        } else {
+          document.getElementById("loader").innerText = "Booking link not found.";
+        }
+      }
+
+      fetchCalendlyLink();
+    </script>
+  </body>
 </html>
