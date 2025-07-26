@@ -29,41 +29,36 @@
   </style>
 </head>
 <body>
-  <div id="loading">Loading your booking link...</div>
+  <div id="loading">Loading your personalized booking link...</div>
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const email = urlParams.get("email");
+    async function loadBooking() {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
 
-    if (!email) {
-      document.body.innerHTML = "<h2>Missing email address.</h2>";
-    } else {
-      // Your Zapier webhook URL
-      const zapierWebhookUrl = "https://hooks.zapier.com/hooks/catch/23671027/uuwrxhr/";
+      if (!email) {
+        document.getElementById('loading').innerText = 'No email provided.';
+        return;
+      }
 
-      fetch(zapierWebhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const calendlyLink = data.calendly;
-        if (calendlyLink) {
-          const iframe = document.createElement("iframe");
-          iframe.src = calendlyLink;
-          document.body.innerHTML = ""; // clear loading text
+      try {
+        const response = await fetch(`https://hooks.zapier.com/hooks/catch/23671027/uuwrxhr/?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (data.calendly) {
+          const iframe = document.createElement('iframe');
+          iframe.src = data.calendly;
+          document.body.innerHTML = ''; // Clear loading message
           document.body.appendChild(iframe);
         } else {
-          document.body.innerHTML = "<h2>Booking link not found.</h2>";
+          document.getElementById('loading').innerText = 'Could not load your personalized booking link.';
         }
-      })
-      .catch(err => {
+      } catch (err) {
+        document.getElementById('loading').innerText = 'Error loading booking link.';
         console.error(err);
-        document.body.innerHTML = "<h2>Error loading booking link.</h2>";
-      });
+      }
     }
+
+    loadBooking();
   </script>
 </body>
 </html>
